@@ -11,21 +11,72 @@ mov ds,ax
 
 jmp start
 
-start: mov bx, offset temp
-mov cx,720
-XMED: mov al,[bx]
-      add temp_prom,ax
-      inc bx
-      loop XMED
-xor dx,dx
-mov ax,temp_prom
-mov bx,720
-div bx
-mov temp_prom,ax
+start:
+; Configuracion del 8255 PP1
+     mov dx, DIR_PP1
+     mov al, WC1
+     out dx, al
+
+; Configuracion del 8255 PP2
+    mov dx, DIR_PP2
+    mov al, WC2
+    out dx, al
 end1:
 	jmp   end1
-.data
 
-temp db 720 dup(37)
-temp_prom dw 0
+;***************************************************
+;		Función de salida para control de périféricos
+;***************************************************
+
+OUTPUT PROC NEAR
+
+       PUSH AL
+       PUSH DX
+
+           mov dx, addr
+           mov al, data
+           out dx, al
+
+       POP DX
+  	   POP AL
+  	   RET
+OUTPUT ENDP
+
+;***************************************************
+;		Función de entrada para control de périféricos
+;***************************************************
+
+INPUT PROC NEAR
+
+       PUSH AL
+       PUSH DX
+
+          mov dx, addr
+          in al, dx
+          mov result, al
+
+       POP DX
+  	   POP AL
+  	   RET
+INPUT ENDP
+
+.data ;Data segment - Segmento de datos
+;***************************************************
+;		Configuración del 8255A
+;***************************************************
+DIR_PP1  EQU F006H
+WC1       EQU 83H
+PCA       EQU F004H
+PBA       EQU F002H
+PAA       EQU F000H
+DIR_PP2  EQU F086H
+WC2       EQU 8AH
+PC2       EQU F084H
+PB2       EQU F082H
+PA2       EQU F080H
+
+temp   db 720 dup(37)
+addr   dw ?
+data   db ?
+result db ?
 END
